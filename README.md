@@ -26,11 +26,13 @@ Primary objective is to quantify how (a) warming trends and (b) DTR trends over 
 - Meteo Swiss: gridded daily Tmin, Tmax to compute DTR and Tmean for average trends.\
 - Land-cover: Arealstatistik/NOLC or swissTLM3D/TLMRegio\
 - Vegetation: MODIS MOD13Q1 NDVI and/or Landsat\
-- Control variables: DEM (swissALTI3D) to derive elevation and aspect; Daily meteorological data on state of the atmosphere from Meteo Swiss to be able to consider factors like high convective potential and incoming and outgoing longwave radiation.\
+- Control variables: DEM (swissALTI3D) to derive elevation and aspect; Daily meteorological data on state of the atmosphere from Meteo Swiss to be able to consider factors like high convective potential and incoming and outgoing longwave radiation.
+
 *Pre-processing:*\
 - Project all layers to LV95\
 - Define a working grid to have comparable data sets\
-- Mask persistent snow/ice and lakes for DTR analyses\
+- Mask persistent snow/ice and lakes for DTR analyses
+
 *Methods:*\
 To analyze the effect of the land-cover type on the DTR I want to use a robust trend test per class. For this I will calculate the zen-slope (°C/decade) for each cell. With the help of the Mann-Kendall-p-value you can test if a trend is significant. After calculating the zen-slope for each cell I would want to plot this on a map to visualize the spatial distribution of DTR in dependence of the land-cover. To analyze the effect of the NDVI I will firstly estimate how “extra greenness” affects the diurnal temperature range (DTR) separately for each land-cover type. After removing the normal seasonal cycle, model DTR anomalies as a smooth function of NDVI anomalies with a class-specific curve. This reveals whether an unusual increase in greenness reduces or amplifies DTR and how the magnitude and shape of the effect differ across land-covers. In addition, to test whether long-term warming and DTR trends depend on typical greenness, we group grid cells by their mean summer NDVI into quantiles. For each group we compute robust trend estimates (Sen slope + Mann–Kendall test). Comparing trend slopes across NDVI groups shows if greener places warm differently or exhibit distinct DTR trends than less green places, providing an intuitive, scale-robust check on vegetation’s moderating role. These results I would like to display with graphics again. To evaluate which other values influence the DTR I would like to find out which other variables correlate using an KNN-Algorithm. Variables I would like to consider are for example season and present air mass (high/low pressure systems).
 
