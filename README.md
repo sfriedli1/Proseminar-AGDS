@@ -23,10 +23,14 @@ Primary objective is to quantify how (a) warming trends and (b) DTR trends over 
 ### 4. Implementation
 
 *Data:*\
-- Meteo Swiss: gridded daily Tmin, Tmax to compute DTR and Tmean for average trends.\
+- Meteo Swiss Station Data, ideally stations that measure radiation as well.\
+Data availability: Automated measurements since 1981\
 - Land-cover: Arealstatistik/NOLC or swissTLM3D/TLMRegio\
+Data availability: NOLC for 2004/2009; TLMRegio from 2020-2024 (I found information on swisstopo website, that it exists since 2003 but I could only find downloadable file for 2020-2024)\
 - Vegetation: MODIS MOD13Q1 NDVI and/or Landsat\
-- Control variables: DEM (swissALTI3D) to derive elevation and aspect; Daily meteorological data on state of the atmosphere from Meteo Swiss to be able to consider factors like high convective potential and incoming and outgoing longwave radiation.
+Data availability: MODIS MOD13Q1 NDVI from 2000-2025; Landsat from 1972-2025 (spread over multiple missions)\
+- Control variables: DEM (swissALTI3D) to derive elevation and aspect\
+Data availability: Updated every 6 years split up into 3 regions
 
 *Pre-processing:*\
 - Project all layers to LV95\
