@@ -1,0 +1,92 @@
+---
+title: "Test_Data"
+output: html_document
+---
+Reading in Testdata
+```{R}
+library(here)
+library(readr)
+
+path_rural <- here("data_raw", "Testdata_NonRural.csv")
+path_urban <- here("data_raw", "Testdata_StadtBern.csv")
+
+rural_raw <- read_delim(path_rural, delim = ";", show_col_types = FALSE)
+urban_raw <- read_delim(path_urban, delim = ";", show_col_types = FALSE)
+
+```
+
+Formatting data to long format to enhance plotting afterwards
+```{R}
+library(dplyr)
+library(tidyr)
+library(lubridate)
+
+rural_long <- rural_raw %>%
+  rename(datetime = Date) %>%
+  pivot_longer(-datetime, names_to = "station_id", values_to = "temp") %>%
+  mutate(
+    datetime = dmy_hm(datetime, tz = "Europe/Zurich"),
+    temp = as.numeric(temp),
+    area_type = "Rural"
+  )
+
+urban_long <- urban_raw %>%
+  rename(datetime = Date) %>%
+  pivot_longer(-datetime, names_to = "station_id", values_to = "temp") %>%
+  mutate(
+    datetime = dmy_hm(datetime, tz = "Europe/Zurich"),
+    temp = as.numeric(temp),
+    area_type = "Non-rural"
+  )
+
+
+```
+
+Harmonize the non-rural data to hourly data 
+```{R}
+# --- 1) Urban: 10-min → hourly ---
+urban_hourly <- urban_long %>%
+  mutate(hour = floor_date(datetime, "hour")) %>%
+  group_by(area_type, station_id, hour) %>%
+  summarise(
+    temp = mean(temp, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  rename(datetime = hour)
+
+```
+Calculate DTR for rural and non-rural data per station
+```{R}
+daily_dtr_by_station <- bind_rows(rural_long, urban_hourly) %>%
+  mutate(date = as_date(datetime)) %>%
+  filter(date >= from, date <= to) %>%
+  group_by(area_type, station_id, date) %>%
+  summarise(
+    tmax    = max(temp, na.rm = TRUE),
+    tmin    = min(temp, na.rm = TRUE),
+    DTR     = tmax - tmin,
+    .groups = "drop_last"
+  ) %>%
+  ungroup()
+
+```
+Calculate mean DTR for rural and non-rural
+```{R}
+daily_mean_dtr <- daily_dtr_by_station %>%
+  group_by(date, area_type) %>%
+  summarise(DTR_mean = mean(DTR, na.rm = TRUE), .groups = "drop")
+
+```
+Plot DTR rural and non-rural
+```{R}
+library(ggplot2)
+
+ggplot(daily_mean_dtr, aes(date, DTR_mean, color = area_type)) +
+  geom_line(linewidth = 1) + geom_point() +
+  labs(x = "Datum", y = "DTR (°C)", color = "Gebiet")
+
+```
+
+
+
+

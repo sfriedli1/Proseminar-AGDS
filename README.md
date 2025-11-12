@@ -16,7 +16,7 @@ Urbanization and vegetation change modify surface climate via albedo, evapotrans
 
 Primary objective is to quantify how DTR is different in rural vs. non-rural areas in the Swiss Plateau. As well as to identify potential further drivers of spatial/temporal variability of DTR. Key questions:
 
-1.  How does DTR differ between rural and non-rural areas and depending on the NDVI?
+1.  How does DTR differ between rural and non-rural areas also in dependence on the NDVI?
 
 2.  Are there other variables that contribute to DTR variance and what is there relevance compared to land-cover classification?
 
@@ -56,7 +56,11 @@ Week 7: Polish report + final reproducibility test
 
 One challenge will be to accuratly determine whether a station of Meteo Swiss is in a non-rural area and therefore useful for my analysis. Because certain stations, like the station in Lucerne, are in rural area, but in a park. In addition it will be a challenge that the stations in Bern only provide data from May to September. So the difference in DTR can only be determined for end of spring until the beginning of autumn. Visualizing the differences in DTR geographically could also become a defiance. But I think one option would be to integrate a map, for example Google Earth, to support geographical visualization.
 
-### 7. Literature
+### 7. Demonstration of Data
+
+In the vignettes folder in the Test_Data.Rmd file I implemented a comparison of the DTR for rural vs. non-rural areas for one week in June. At the end I plotted a simple line diagram to visualize the difference in DTR for rural and non-rural areas.
+
+### 8. Literature
 
 Scheitlin and Dixon(2010) : Diurnal Temperature Range Variability due to Land Cover and Airmass Types in the Southeast\
 Gogoi et. al.(2019) : Land use and land cover change effect on surface temperature over Eastern India
