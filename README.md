@@ -25,14 +25,14 @@ Primary objective is to quantify how DTR is different in rural vs. non-rural are
 *Data:*\
 - Meteo Swiss Station Data, ideally stations that measure radiation as well.\
 Data availability: Automated measurements since 1981\
+Download csv files under the following link: \
+<https://www.meteoschweiz.admin.ch/service-und-publikationen/applikationen/ext/daten-ohne-programmierkenntnisse-herunterladen.html#lang=de&mdt=normal&pgid=Radiation&sid=&col=&di=&tr=&hdr=>\
 - Station Data from Bern by University of Bern\
 Data availability: 2018-2022 from Mai to September\
-- Land-cover: Arealstatistik/NOLC or swissTLM3D/TLMRegio\
-Data availability: NOLC for 2004/2009; TLMRegio from 2020-2024 (I found information on swisstopo website, that it exists since 2003 but I could only find downloadable file for 2020-2024)\
+Download Excel File under the following link:\
+<https://boris-portal.unibe.ch/entities/product/deb9f006-008a-4b0e-abfe-dfdfd61d60aa>\
 - Vegetation: MODISTools and/or Landsat\
-Data availability: MODISTools from 2000-2025; Landsat from 1972-2025 (spread over multiple missions)\
-- Control variables: DEM (swissALTI3D) to derive elevation and aspect\
-Data availability: Updated every 6 years split up into 3 regions
+Data availability: MODISTools from 2000-2025; Landsat from 1972-2025 (spread over multiple missions)
 
 *Pre-processing:*\
 - Project all layers to LV95\
