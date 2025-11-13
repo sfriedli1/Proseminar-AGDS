@@ -8,12 +8,11 @@ library(here)
 library(readr)
 
 ## Adjust the path to data and not data_raw:
-path_rural <- here("data_raw", "Testdata_NonRural.csv")
-path_urban <- here("data_raw", "Testdata_StadtBern.csv")
+path_rural <- here("data", "Testdata_NonRural.csv")
+path_urban <- here("data", "Testdata_StadtBern.csv")
 
 rural_raw <- read_delim(path_rural, delim = ";", show_col_types = FALSE)
 urban_raw <- read_delim(path_urban, delim = ";", show_col_types = FALSE)
-
 ```
 
 Formatting data to long format to enhance plotting afterwards
