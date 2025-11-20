@@ -11,20 +11,21 @@ library(readr)
 library(dplyr)
 library(purrr)
 library(ggplot2)
+library(lubridate)
 ```
 
 ### Reading in the data and calculating DTR
 ```{R}
 data_files <- list.files(
   "../data",
-  pattern = "1981-2024_dtr\\.csv$",  # nur die mit 1981–2024
+  pattern = "1981-2024_dtr\\.csv$",  
   full.names = TRUE
 )
 
 for (path_in in data_files) {
   df <- read_csv(path_in, show_col_types = FALSE)
   
-  # z.B. "../data/Koppigen_1981-2024_dtr.csv" -> "df_Koppigen_1981_2024_dtr"
+  # define the name for the data frame for each station
   base_name <- basename(path_in)                         # "Koppigen_1981-2024_dtr.csv"
   base_name <- tools::file_path_sans_ext(base_name)      # "Koppigen_1981-2024_dtr"
   df_name   <- paste0("df_", gsub("-", "_", base_name))  # "df_Koppigen_1981_2024_dtr"
@@ -34,11 +35,11 @@ for (path_in in data_files) {
 
 ```
 
-### Reading all the data into one 
+### Reading all the data into one data frame
 ```{R}
 data_files <- list.files(
   "../data",
-  pattern = "1981-2024_dtr\\.csv$",  # oder "_tre.csv$", je nach Dateinamen
+  pattern = "1981-2024_dtr\\.csv$",  
   full.names = TRUE
 )
 
@@ -50,7 +51,7 @@ dtr_all <- lapply(data_files, function(path_in) {
   
   
   base_name <- basename(path_in)
-  station   <- sub("_1981-2024_dtr\\.csv$", "", base_name)  # ggf. anpassen
+  station   <- sub("_1981-2024_dtr\\.csv$", "", base_name)  
   
   df$station <- station
   
@@ -82,15 +83,191 @@ ggplot(dtr_all, aes(x = date, y = dtr)) +
   labs(
     x = "Datum",
     y = "dtr",
-    color = "red",
-    title = "Tägliche DTR pro Station (1981–2024)"
+    title = "DTR per Station (1981–2024)"
   ) +
   facet_wrap(~ station, ncol = 3, scales = "free") +
   theme_minimal()
 
 ```
 
+### Calculate mean DTR per month
+```{R}
+dtr_all_monthly <- dtr_all |>
+  mutate(
+    year  = year(date),
+    month = month(date)
+  ) |>
+  group_by(station, year, month) |>
+  summarise(
+    mean_dtr = mean(dtr, na.rm = TRUE),
+    .groups = "drop"
+  )
+  
+```
 
+### Plot course of monthly mean DTR 
+```{R}
+dtr_all_monthly_plot_course <- dtr_all_monthly |>
+  mutate(
+    month = factor(month, levels = 1:12, labels = month.abb)
+  )
+
+ggplot(dtr_all_monthly_plot_course,
+       aes(x = year, y = mean_dtr, colour = station, group = station)) +
+  geom_line(alpha = 0.4) +
+  facet_wrap(~ month, ncol = 4) +
+  labs(
+    x = "Year",
+    y = "Monthly mean DTR [°C]",
+    colour = "Station",
+    title = "Course of monthly mean DTR per month"
+  ) +
+  theme_minimal()
+
+```
+
+### Plot trend of monthly mean DTR
+```{R}
+dtr_all_monthly_plot_trend <- dtr_all_monthly |>
+  mutate(
+    month = factor(month, levels = 1:12, labels = month.abb)
+  )
+
+ggplot(dtr_all_monthly_plot_trend,
+       aes(x = year, y = mean_dtr, colour = station, group = station)) +
+  geom_smooth(method = "lm", se = FALSE, alpha = 0.4) +
+  facet_wrap(~ month, ncol = 4) +
+  labs(
+    x = "Year",
+    y = "Monthly mean DTR [°C]",
+    colour = "Station",
+    title = "Trends of monthly mean DTR per month"
+  ) +
+  theme_minimal()
+
+```
+
+### Fit linear trend per Station and month
+```{R}
+# Calculate time span per station and month
+year_range <- dtr_all_monthly |>
+  group_by(station, month) |>
+  summarise(
+    start_year = min(year, na.rm = TRUE),
+    end_year   = max(year, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+trend_table <- dtr_all_monthly |>
+  group_by(station, month) |>
+  group_modify(~ broom::tidy(lm(mean_dtr ~ year, data = .x))) |>
+  ungroup() |>
+  # coefficient per year
+  filter(term == "year") |>
+  left_join(year_range, by = c("station", "month")) |>
+  mutate(
+    slope_per_decade = estimate * 10,
+    abs_change = estimate *(end_year - start_year),
+    month = factor(month, levels = 1:12, labels = month.abb)
+  )
+
+```
+
+
+### Heat map to visualize slope per decade of the mean dtr per month across all stations
+```{R}
+ggplot(trend_table,
+       aes(x = month, y = station, fill = slope_per_decade)) +
+  geom_tile() +
+  scale_fill_gradient2(
+    mid = 0,
+    name = "Trend [°C/decade]"
+  ) +
+  labs(
+    x = "Month",
+    y = "Station",
+    title = "Trend of monthly mean DTR (1981–2024)"
+  ) +
+  theme_minimal()
+
+```
+
+### Calculate mean tmin and mean tmax for each station per month
+```{R}
+temps_monthly <- dtr_all |> 
+  mutate(
+    year = year(date),
+    month = month(date)
+  )|> 
+  group_by(station, year, month)|> 
+  summarise(
+    tmin_mean = mean(tre200dn, na.rm =TRUE),
+    tmax_mean = mean(tre200dx, na.rm = TRUE),
+    dtr_mean = mean(dtr, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
+### Trend for tmin
+```{R}
+trend_tmin <- temps_monthly |>
+   group_by(station, month) |>
+  group_modify(~ broom::tidy(lm(tmin_mean ~ year, data = .x))) |>
+  ungroup() |>
+  filter(term == "year") |>
+  mutate(
+    slope_per_decade = estimate * 10,   # °C per decade
+    month = factor(month, levels = 1:12, labels = month.abb)
+    )
+```
+
+### Trend für tmax
+```{R}
+trend_tmax <- temps_monthly |> 
+  group_by(station, month) |> 
+  group_modify(~ broom::tidy(lm(tmax_mean ~ year, data =.x))) |>
+  ungroup() |>
+  filter(term == "year") |>
+  mutate(
+    slope_per_decade = estimate * 10,   # °C per decade
+    month = factor(month, levels = 1:12, labels = month.abb)
+    )
+```
+
+### Heat map to visualize slope per decade of mean tmin per month across all stations
+```{R}
+ggplot(trend_tmin,
+       aes(x = month, y = station, fill = slope_per_decade)) +
+  geom_tile() +
+  scale_fill_gradient2(
+    mid = 0,
+    name = "Trend [°C/decade]"
+  ) +
+  labs(
+    x = "Month",
+    y = "Station",
+    title = "Trend of monthly mean tmin (1981–2024)"
+  ) +
+  theme_minimal()
+
+```
+
+### Heat map to visualize slope per decade of mean tmax per month across all stations
+```{R}
+ggplot(trend_tmax,
+       aes(x = month, y = station, fill = slope_per_decade)) +
+  geom_tile() +
+  scale_fill_gradient2(
+    mid = 0,
+    name = "Trend [°C/decade]"
+  ) +
+  labs(
+    x = "Month",
+    y = "Station",
+    title = "Trend of monthly mean tmax (1981–2024)"
+  ) +
+  theme_minimal()
+```
 
 
 

@@ -14,8 +14,7 @@ process_file <- function(path_in) {
     rename(datetime = reference_timestamp) |>
     mutate(date = as.Date(datetime)) |>
     filter(
-      date >= as.Date("1981-01-01"),
-      date <= as.Date("2024-12-31")
+      between(date, as.Date("1981-01-01"), as.Date("2024-12-31"))
     ) |>
     select(date, tre200dn, tre200dx)
   
