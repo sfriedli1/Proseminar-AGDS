@@ -6,61 +6,63 @@ In this repository I will store all the relevant code, data and the report for t
 
 ### 1. Topic Summary
 
-The object of this project is to investigate how land cover (rural vs. non-rural) modulates the diurnal temperature range (DTR) in Switzerland’s Swiss Plateau (Mittelland). Using Meteo Swiss stationary temperature data and measurements of the University of Bern in the City of Bern and potentially combining it with satellite data for land-cover classifications and vegetation indices, I will quantify the difference in DTR by land-cover class and variability in NDVI and assess the importance of terrain and surface properties for explaining DTR. In the end I want to tell a story with the data using informative graphics and provide policy-relevant insights.
+The object of this project is to investigate how the diurnal temperature range (DTR) has evolved at selected stations on the Swiss Plateau (Mittelland) between 1981 and 2024, and to what extent differences in surrounding vegetation can help explain this evolution. Using daily temperature data from 15 stations of the Meteo Swiss automatic network and satellite-derived vegetation indices (NDVI and if necessary EVI) from MODIS, I will quantify long-term DTR trends and assess whether these trends are related to the vegetation in a 500m radius around the stations. The overarching aim is to tell a coherent story with informative graphics and to derive insights that are relevant for understanding how land surface may modulate local climate.
 
 ### 2. Background and motivation
 
-Urbanization and vegetation change modify surface climate via albedo, evapotranspiration and heat storage, potentially affecting DTR. Prior studies by Scheitlin and Dixon as well as by Gogi et. al. have reported clear land-cover dependencies of DTR and surface temperature over North America and India respectively. However, Central Europe and particularly Switzerland’s Swiss Plateau remains unexplored. Given the high-quality national meteorological data and detailed land-cover products available, Switzerland is ideal to: (i) test whether DTR diverge between rural and non-rural areas and (ii) evaluate if the NDVI can at least partly explain DTR variability. Results could be beneficial for future land-management strategies.
+Urbanization, land-use and vegetation dynamics modify surface energy balance via albedo, evapotranspiration and heat storage, potentially affecting DTR. Prior studies (e.g. Scheitlin and Dixon; Gogi et. al.) have reported clear land-cover dependencies of DTR and surface temperature over North America and India respectively. However, Central Europe and particularly Switzerland’s Swiss Plateau remains less explored regarding long-term DTR evolution and its link to land-cover and vegetation dynamics. Given the high-quality national meteorological data and well-established satalite products for vegetation (e.g MODIS NDVI), Switzerland is ideal to: (i) quantify multi-decadal DTR trends and (ii) examine whether the vegetation surrounding a station is linked to different DTR trends. Such insight may help to better understand the role of vegetation buffering or amplifying local climate signals and could be relevant for future land-management and adaptation strategies.
 
 ### 3. Objective
 
-Primary objective is to quantify how DTR is different in rural vs. non-rural areas in the Swiss Plateau. As well as to identify potential further drivers of spatial/temporal variability of DTR. Key questions:
+Primary objective is to quantify how diurnal temperature range has changed between 1981 and 2024 at 15 selected weather stations from Meteo Swiss on the Swiss Plateau and to evaluate whether these change are related to vegetation conditions in the immediate surroundings of the stations.
 
-1.  How does DTR differ between rural and non-rural areas also in dependence on the NDVI?
+**Key questions:**
 
-2.  Are there other variables that contribute to DTR variance and what is there relevance compared to land-cover classification?
+1.  Have DTR values increased, decreased or remained stable over the period 1981-2024?
+
+2.  Can differences in DTR trends between stations be linked to differences in vegetation, as measured by NDVI within a radius of 500m around each station?
 
 ### 4. Implementation
 
 *Data:*\
 - Meteo Swiss Station Data, ideally stations that measure radiation as well.\
 Data availability: Automated measurements since 1981\
-Download csv files under the following link: \
-<https://www.meteoschweiz.admin.ch/service-und-publikationen/applikationen/ext/daten-ohne-programmierkenntnisse-herunterladen.html#lang=de&mdt=normal&pgid=Radiation&sid=&col=&di=&tr=&hdr=>\
-- Station Data from Bern by University of Bern\
-Data availability: 2018-2022 from Mai to September\
-Download Excel File under the following link:\
-<https://boris-portal.unibe.ch/entities/product/deb9f006-008a-4b0e-abfe-dfdfd61d60aa>\
+Instruction to download the raw data used in this analysis, see "8. Download the raw data" in this README.\
 - Vegetation: MODISTools and/or Landsat\
 Data availability: MODISTools from 2000-2025; Landsat from 1972-2025 (spread over multiple missions)
 
 *Pre-processing:*\
-- Project all layers to LV95\
-- Define a working grid and timespan to have comparable data sets\
-- Categorize each Station (rural vs. non-rural)
+- Ensure that all spatial data sets use the coordinate system LV95\
+- Select 15 stations with as long and as continuous daily Tmin and Tmax records from 1981-2024.\
+- Compute DTR for each station and day.
 
 *Methods:*\
-To analyze the effect of the land-cover type on the DTR I want to calculate the DTR for each station. For further investigation I will analyse the results for this calculations, to determine if all the stations per category show similar patterns. Then I want to aggregate for each category and calculate the average DTR over all the stations for each day. For further investigation I want to split it up for each month to be able to analyze if the land cover class has a different influence depending on the month. With the help of ModisTools and the coordinates of the stations determine if the NDVI also has an influence on the DTR. In the end I would like to visualize the difference in DTR in rural vs. non-rural areas.
+Derive annual and seasonal mean DTR time series for each station. Then analyse the long-term trends using simple statistical models and if appropriate, non-parametric trend tests (e.g. Mann-Kendall) to test for significance. After that visualize these trends. For each station calculate seasonal mean NDVI within 500m buffer and characterize them. Link DTR trends to vegetation by relating DTR metrics to vegetation metrics across stations. Use a correlation and regression analyses to assess whether stations with similar NDVI (e.g. make intervals of NDVI and assign the stations to an interval). Visualize these relationships with graphics and suitable maps.
 
 ### 5. Responsibilities and timeline
 
 Week 0: Finalize study design; set up repo; acquire relevant data sets\
 Week 1: Full data ingestion & preprocessing\
-Week 2-3: Data analysis focusing on rural data and DTR\
-Week 3-4: Data analysis focusing on non-rural data and DTR\
-Week 5: Focus on the differences between rural and non-rural areas\
+Week 2-3: DTR analysis and trend estimation for all stations\
+Week 3-4: Download and process MODIS NDVI data; extract vegetation indices for 500m buffers around stations\
+Week 5: Joint analysis of DTR vs. NDVI; exploration of relationships and development of key figures\
 Week 6: Refine graphics and Refactor Report\
 Week 7: Polish report + final reproducibility test
 
 ### 6. Risks and contingency
 
-One challenge will be to accuratly determine whether a station of Meteo Swiss is in a non-rural area and therefore useful for my analysis. Because certain stations, like the station in Lucerne, are in rural area, but in a park. In addition it will be a challenge that the stations in Bern only provide data from May to September. So the difference in DTR can only be determined for end of spring until the beginning of autumn. Visualizing the differences in DTR geographically could also become a defiance. But I think one option would be to integrate a map, for example Google Earth, to support geographical visualization.
+One challenge is the limited temporal coverage of MODIS vegetation products, because they typically start around the year 2000. Another challenge concerns the spatial resolution and data quality of MODIS. The 500m buffer around each station will likely cover only few pixels and cloud cover or data gaps could effect certain years (especially during winter months).
 
 ### 7. Demonstration of Data
 
 In the vignettes folder in the Test_Data.Rmd file I implemented a comparison of the DTR for rural vs. non-rural areas for one week in June. At the end I plotted a simple line diagram to visualize the difference in DTR for rural and non-rural areas.
 
-### 8. Literature
+### 8. Download the raw data
+
+The raw data can be downloaded by running the "download_data_temp_meteoschweiz.R" script in the analysis folder. Before running the script you will have to create a folder data_raw. The script then downloads the daily temperature data for the 15 selected stations (covering 1981-2024, where available). \
+The MODIS data for NDVI will be downloaded and accessed separately as part of the vegetation analysis.
+
+### 9. Literature
 
 Scheitlin and Dixon(2010) : Diurnal Temperature Range Variability due to Land Cover and Airmass Types in the Southeast\
 Gogoi et. al.(2019) : Land use and land cover change effect on surface temperature over Eastern India

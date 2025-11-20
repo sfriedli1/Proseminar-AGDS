@@ -1,0 +1,96 @@
+---
+title: "report"
+output: html_document
+author: "Sascha Friedli"
+---
+## Analysis of Correlation of DTR and NDVI
+
+### List of all necessary libraries
+```{R}
+library(readr)
+library(dplyr)
+library(purrr)
+library(ggplot2)
+```
+
+### Reading in the data and calculating DTR
+```{R}
+data_files <- list.files(
+  "../data",
+  pattern = "1981-2024_dtr\\.csv$",  # nur die mit 1981–2024
+  full.names = TRUE
+)
+
+for (path_in in data_files) {
+  df <- read_csv(path_in, show_col_types = FALSE)
+  
+  # z.B. "../data/Koppigen_1981-2024_dtr.csv" -> "df_Koppigen_1981_2024_dtr"
+  base_name <- basename(path_in)                         # "Koppigen_1981-2024_dtr.csv"
+  base_name <- tools::file_path_sans_ext(base_name)      # "Koppigen_1981-2024_dtr"
+  df_name   <- paste0("df_", gsub("-", "_", base_name))  # "df_Koppigen_1981_2024_dtr"
+  
+  assign(df_name, df)
+}
+
+```
+
+### Reading all the data into one 
+```{R}
+data_files <- list.files(
+  "../data",
+  pattern = "1981-2024_dtr\\.csv$",  # oder "_tre.csv$", je nach Dateinamen
+  full.names = TRUE
+)
+
+dtr_all <- lapply(data_files, function(path_in) {
+  df <- read_csv(path_in, show_col_types = FALSE)
+  
+  df <- df |>
+      mutate(dtr = tre200dx - tre200dn)
+  
+  
+  base_name <- basename(path_in)
+  station   <- sub("_1981-2024_dtr\\.csv$", "", base_name)  # ggf. anpassen
+  
+  df$station <- station
+  
+  df
+}) |>
+  bind_rows()
+
+
+```
+
+### Plot the DTR for each station 
+```{R}
+ggplot(dtr_all, aes(x = date, y = dtr, colour = station)) +
+  geom_line(alpha = 0.4, linewidth = 0.3) +
+  labs(
+    x = "Datum",
+    y = "dtr",
+    colour = "Station",
+    title = "Tägliche DTR für alle Stationen (1981–2024)"
+  ) +
+  theme_minimal()
+
+```
+
+### Plot the DTR for each station in separate diagram
+```{R}
+ggplot(dtr_all, aes(x = date, y = dtr)) +
+  geom_line(alpha = 0.5, linewidth = 0.3) +
+  labs(
+    x = "Datum",
+    y = "dtr",
+    color = "red",
+    title = "Tägliche DTR pro Station (1981–2024)"
+  ) +
+  facet_wrap(~ station, ncol = 3, scales = "free") +
+  theme_minimal()
+
+```
+
+
+
+
+
