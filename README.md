@@ -60,7 +60,7 @@ In the vignettes folder in the Test_Data.Rmd file I implemented a comparison of 
 ### 8. Download the raw data
 
 The raw data can be downloaded by running the "download_data_temp_meteoschweiz.R" script in the analysis folder. Before running the script you will have to create a folder data_raw. The script then downloads the daily temperature data for the 15 selected stations (covering 1981-2024, where available). To find detailed information on the data and the stations from Meteo Swiss please refer to ogd-smn_meta_parameters.csv and ogd-smn_meta_stations.csv\
-The MODIS data for NDVI will be downloaded and accessed separately as part of the vegetation analysis.
+The MODIS data for NDVI can be downloaded with the script download_MODIS_NDVI.R from the analysis folder.
 
 ### 9. Literature
 

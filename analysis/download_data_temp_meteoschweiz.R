@@ -12,7 +12,7 @@ station_urls <- c(
   Luzern        = "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/luz/ogd-smn_luz_d_historical.csv",
   Hallau        = "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/hll/ogd-smn_hll_d_historical.csv",
   Ebnat_Kappel  = "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/ebk/ogd-smn_ebk_d_historical.csv",
-  Affoltern       = "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/reh/ogd-smn_reh_d_historical.csv",
+  Affoltern     = "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/reh/ogd-smn_reh_d_historical.csv",
   Aadorf        = "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/tae/ogd-smn_tae_d_historical.csv",
   Schaffhausen  = "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sha/ogd-smn_sha_d_historical.csv",
   Waedenswil    = "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/wae/ogd-smn_wae_d_historical.csv",

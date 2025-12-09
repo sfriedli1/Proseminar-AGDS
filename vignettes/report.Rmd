@@ -12,6 +12,9 @@ library(dplyr)
 library(purrr)
 library(ggplot2)
 library(lubridate)
+library(trend)
+library(forcats)
+library(broom)
 ```
 
 ### Reading in the data and calculating DTR
@@ -120,7 +123,7 @@ ggplot(dtr_all_monthly_plot_course,
     x = "Year",
     y = "Monthly mean DTR [°C]",
     colour = "Station",
-    title = "Course of monthly mean DTR per month"
+    title = "Course of mean DTR per month"
   ) +
   theme_minimal()
 
@@ -141,7 +144,7 @@ ggplot(dtr_all_monthly_plot_trend,
     x = "Year",
     y = "Monthly mean DTR [°C]",
     colour = "Station",
-    title = "Trends of monthly mean DTR per month"
+    title = "Trends of mean DTR per month"
   ) +
   theme_minimal()
 
@@ -170,6 +173,40 @@ trend_table <- dtr_all_monthly |>
     abs_change = estimate *(end_year - start_year),
     month = factor(month, levels = 1:12, labels = month.abb)
   )
+
+```
+
+### Trend of mean DTR per season over all stations
+```{R}
+# 1) Define Seasonal Average
+dtr_season_all <- dtr_all_monthly |>
+  mutate(
+    season = case_when(
+      month %in% c(12, 1, 2)  ~ "Winter",
+      month %in% 3:5          ~ "Spring",
+      month %in% 6:8          ~ "Summer",
+      month %in% 9:11         ~ "Autumn"
+    ),
+    season = factor(season, levels = c("Winter", "Spring", "Summer", "Autumn"))
+  ) |>
+  group_by(year, season) |>
+  summarise(
+    dtr_mean_all = mean(mean_dtr, na.rm = TRUE),  # average over all stations
+    .groups = "drop"
+  )
+
+# 2) Grafic: Trend of mean DTR per Season
+ggplot(dtr_season_all,
+       aes(x = year, y = dtr_mean_all)) +
+  geom_line() +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~ season, ncol = 2) +
+  labs(
+    title = "Trend of mean DTR per Season",
+    x = "Year",
+    y = "mean DTR [°C]"
+  ) +
+  theme_minimal()
 
 ```
 
@@ -267,6 +304,372 @@ ggplot(trend_tmax,
     title = "Trend of monthly mean tmax (1981–2024)"
   ) +
   theme_minimal()
+```
+
+## Create Data Frame for NDVI data
+```{R}
+in_dir <- here::here("data")
+
+files <- list.files(
+  path       = in_dir,
+  pattern    = "^NDVI_.*\\.csv$",
+  full.names = TRUE
+)
+
+ndvi_all <- files |>
+  map_dfr(~ read_csv(.x, show_col_types = FALSE))
+
+```
+
+## Aggregate NDVI data to monthly average
+```{R}
+ndvi_monthly <- ndvi_all |>
+  mutate(
+    date  = as.Date(calendar_date),
+    year  = year(date),
+    month = month(date),
+    ndvi  = value * scale      # calculate scaled NDVI
+  ) |>
+  group_by(site, year, month) |>
+  summarise(
+    ndvi_mean = mean(ndvi, na.rm = TRUE),
+    .groups   = "drop"
+  )
+ndvi_monthly <- ndvi_monthly |>
+  mutate(
+    month_name = factor(month, levels = 1:12, labels = month.abb)
+  )
+
+```
+
+## Determine potential trend in monthly NDVI data
+```{R}
+ndvi_mk_results <- ndvi_monthly |>
+  arrange(site, month, year) |>
+  group_by(site, month_name) |>
+  group_modify(~ {
+    dat <- .x
+
+    # make sure there are enough data points
+    if (nrow(dat) < 3) {
+      return(tibble(
+        Z       = NA_real_,
+        p_value = NA_real_,
+        trend   = NA_character_
+      ))
+    }
+
+    mk <- mk.test(dat$ndvi_mean)
+
+    Z <- unname(mk$statistic)
+    p <- mk$p.value
+
+    tibble(
+      Z       = Z,
+      p_value = p,
+      trend   = dplyr::case_when(
+        p >= 0.05 ~ "no_trend",
+        Z > 0     ~ "increasing",
+        Z < 0     ~ "decreasing",
+        TRUE      ~ NA_character_
+      )
+    )
+  }) |>
+  ungroup()
+
+```
+
+## Look-Up Table for station name and abbreviation
+```{R}
+
+station_lookup <- tribble(
+  ~site, ~station_full,
+  "AIG", "Aigle",
+  "EBK", "Ebnat_Kappel",
+  "GVE", "Genf",
+  "GUT", "Guettingen",
+  "HLL", "Hallau",
+  "KOP", "Koppigen",
+  "LUZ", "Luzern",
+  "PAY", "Payerne",
+  "SHA", "Schaffhausen",
+  "SIO", "Sion",
+  "STG", "St.Gallen",
+  "TAE", "Aadorf",      
+  "WAE", "Waedenswil",
+  "REH", "Affoltern",
+  "CGI", "Nyon"
+     
+)
+
+```
+
+
+## Visualize Trend of NDVI
+```{R}
+ndvi_mk_results2 <- ndvi_mk_results |>
+  left_join(station_lookup, by = c("site" = "site"))
+
+ndvi_mk_results_plot <- ndvi_mk_results2 |>
+  mutate(
+    month_name = factor(month_name, levels = month.abb),  # Jan–Dec
+    trend      = factor(trend, levels = c("decreasing", "no_trend", "increasing"))
+  )
+
+# Create Heatmap
+ggplot(ndvi_mk_results_plot,
+       aes(x = month_name, y = station_full, fill = trend)) +
+  geom_tile(color = "grey80") +  
+  scale_fill_manual(
+    values = c(
+      "decreasing" = "#2166ac",  
+      "no_trend"   = "white",    
+      "increasing" = "#b2182b"   
+    ),
+    na.value = "grey90",         
+    name = "MK-Trend"
+  ) +
+  labs(
+    x = "Month",
+    y = "Station",
+    title = "Mann-Kendall-Trend of NDVI (2001–2024)",
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+
+```
+
+## Connection NDVI and DTR Trends
+```{R}
+trend_both_cat <- trend_table |>
+  left_join(ndvi_mk_results2, by = c("station" = "station_full", "month" = "month_name"))
+
+trend_both_cat |>
+  mutate(
+    season = case_when(
+      month %in% c("Jan", "Feb", "Mar") ~ "Jan–Mar",
+      month %in% c("Apr", "May", "Jun") ~ "Apr–Jun",
+      month %in% c("Jul", "Aug", "Sep") ~ "Jul–Sep",
+      month %in% c("Oct", "Nov", "Dec") ~ "Oct–Dec"
+    ),
+    season = factor(season, levels = c("Jan–Mar", "Apr–Jun", "Jul–Sep", "Oct–Dec"))
+  ) |>
+  ggplot(aes(x = trend, y = slope_per_decade)) +
+  geom_boxplot() +
+  facet_wrap(~ season, nrow = 1) +
+  labs(
+    x = "NDVI Mann–Kendall-Trend",
+    y = "DTR-Trend [°C/Decade]"
+  ) +
+  theme_minimal()
+
+
+```
+
+## Calculate seasonal NDVI
+```{R}
+ndvi_season <- ndvi_monthly |>
+  mutate(
+    season = case_when(
+      month %in% c(12, 1, 2)  ~ "Winter",     
+      month %in% 3:5          ~ "Spring",   
+      month %in% 6:8          ~ "Summer",     
+      month %in% 9:11         ~ "Autumn"      
+    ),
+    season = factor(season, levels = c("Winter", "Spring", "Summer", "Autumn"))
+  ) |>
+  group_by(site, year, season) |>
+  summarise(
+    ndvi_season_mean = mean(ndvi_mean, na.rm = TRUE),
+    n_months         = n(),      # how many months            
+    .groups          = "drop"
+  )
+
+```
+
+## Sen-Slope for NDVI
+```{R}
+trend_ndvi_season <- ndvi_season |>
+  arrange(site, season, year) |>
+  group_by(site, season) |>
+  group_modify(~ {
+    dat <- .x
+
+    # check data quality
+    if (nrow(dat) < 3 || all(is.na(dat$ndvi_season_mean))) {
+      return(tibble(
+        ndvi_sen_per_year   = NA_real_,
+        ndvi_sen_per_decade = NA_real_
+      ))
+    }
+
+    # Sen's slope
+    ss <- sens.slope(dat$ndvi_season_mean)
+
+    slope_per_year <- as.numeric(ss$estimates)
+
+    tibble(
+      ndvi_sen_per_year   = slope_per_year,
+      ndvi_sen_per_decade = slope_per_year * 10
+    )
+  }) |>
+  ungroup()
+
+```
+
+## Seasonal trend DTR
+```{R}
+dtr_season <- dtr_all_monthly |>
+  mutate(
+    season = case_when(
+      month %in% c(12, 1, 2)  ~ "Winter",     # DJF
+      month %in% 3:5          ~ "Spring",     # MAM
+      month %in% 6:8          ~ "Summer",     # JJA
+      month %in% 9:11         ~ "Autumn"      # SON
+    ),
+    season = factor(season, levels = c("Winter", "Spring", "Summer", "Autumn"))
+  ) |>
+  group_by(station, year, season) |>
+  summarise(
+    dtr_season_mean = mean(mean_dtr, na.rm = TRUE),
+    n_months        = n(),          
+    .groups         = "drop"
+  )
+
+trend_dtr_season <- dtr_season |>
+  group_by(station, season) |>
+  group_modify(~ {
+    dat <- .x
+    
+    if (nrow(dat) < 3 || all(is.na(dat$dtr_season_mean))) {
+      return(tibble(
+        dtr_slope_per_year   = NA_real_,
+        dtr_slope_per_decade = NA_real_,
+        dtr_p_value          = NA_real_
+      ))
+    }
+    
+    fit <- lm(dtr_season_mean ~ year, data = dat)
+    tt  <- tidy(fit)
+    
+    slope_row <- tt[tt$term == "year", ]
+    
+    tibble(
+      dtr_slope_per_year   = slope_row$estimate,
+      dtr_slope_per_decade = slope_row$estimate * 10,
+      dtr_p_value          = slope_row$p.value
+    )
+  }) |>
+  ungroup()
+
+```
+
+## Linear Regression trend DTR and NDVI
+```{R}
+trend_dtr_season_full_name <- trend_dtr_season |>
+  inner_join(station_lookup, by = c("station" = "station_full"))
+
+trend_both_season <- trend_dtr_season_full_name |>
+  inner_join(trend_ndvi_season, by = c("site", "season"))
+
+for (s in levels(trend_both_season$season)) {
+  dat_s <- dplyr::filter(trend_both_season, season == s)
+  
+  print(
+    ggplot(dat_s,
+           aes(x = ndvi_sen_per_decade,
+               y = dtr_slope_per_decade)) +
+      geom_point() +
+      geom_smooth(method = "lm", se = FALSE) +
+      labs(
+        title = paste("Season:", s),
+        x = "NDVI Sen's slope (per Decade)",
+        y = "DTR-Trend (°C/Decade)"
+      ) +
+      theme_minimal()
+  )
+  
+  print(summary(lm(dtr_slope_per_decade ~ ndvi_sen_per_decade, data = dat_s)))
+}
+
+```
+
+## Spearman Korrelation 
+```{R}
+for (s in levels(trend_both_season$season)) {
+  dat_s <- dplyr::filter(trend_both_season, season == s)
+res <- cor.test(dat_s$ndvi_sen_per_decade,
+         dat_s$dtr_slope_per_decade,
+         method = "spearman")
+}
+print(res)
+```
+
+# Analysis Correlation DTR and NDVI
+
+## Avererage NDVI per Station & Season
+```{R}
+ndvi_season_clim <- ndvi_season |>
+  group_by(site, season) |>
+  summarise(
+    ndvi_clim = mean(ndvi_season_mean, na.rm = TRUE),
+    .groups   = "drop"
+  )
+```
+
+## Average DTR per Station and Season
+```{R}
+dtr_season_clim <- dtr_season |>
+  group_by(station, season) |>
+  summarise(
+    dtr_clim = mean(dtr_season_mean, na.rm = TRUE),
+    .groups  = "drop"
+  )
+
+```
+
+## Merge DTR and NDVI
+```{R}
+ndvi_season_clim_full_name <- ndvi_season_clim |>
+  left_join(station_lookup, by = c("site" = "site"))
+
+season_clim <- dtr_season_clim |>
+  left_join(ndvi_season_clim_full_name, by = c("station" = "station_full", "season"))
+
+```
+
+## Scatterplot for each Season
+```{R}
+ggplot(season_clim,
+       aes(x = ndvi_clim, y = dtr_clim)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_wrap(~ season) +
+  labs(
+    x = "Mean NDVI",
+    y = "Mean DTR [°C]",
+    title = "Correlation between mean NDVI and mean DTR",
+    subtitle = "One point for each station"
+  ) +
+  theme_minimal()
+
+```
+
+## Analyze significance of correlation with Spearman Correlation
+```{R}
+season_corr <- season_clim |>
+  group_by(season) |>
+  summarise(
+    rho   = cor(ndvi_clim, dtr_clim, method = "spearman"),
+    p_val = cor.test(ndvi_clim, dtr_clim, method = "spearman")$p.value,
+    n     = n(),
+    .groups = "drop"
+  )
+
+season_corr
 ```
 
 
