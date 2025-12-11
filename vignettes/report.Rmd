@@ -3,7 +3,19 @@ title: "report"
 output: html_document
 author: "Sascha Friedli"
 ---
-## Analysis of Correlation of DTR and NDVI
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+# Analysis of Correlation of DTR and NDVI
+
+## Introduction
+The objective of this analysis is to explore the development of the diurnal temperature range (DTR) from 1981-2024 in the Swiss Plateau. We will first calculate the DTR for all 15 stations and assess if a trend is observable. Because the DTR is influenced by the daily minimum and maximum temperature, an in-depth analysis of the daily minimum and maximum temperature will also be conducted in the course of this analysis. 
+In the next step the development of the NDVI in a radius of 500 meters around each station will be calculated and then an analysis of the correlation between DTR and NDVI will be conducted. 
 
 ### List of all necessary libraries
 ```{R}
@@ -65,20 +77,6 @@ dtr_all <- lapply(data_files, function(path_in) {
 
 ```
 
-### Plot the DTR for each station 
-```{R}
-ggplot(dtr_all, aes(x = date, y = dtr, colour = station)) +
-  geom_line(alpha = 0.4, linewidth = 0.3) +
-  labs(
-    x = "Datum",
-    y = "dtr",
-    colour = "Station",
-    title = "Tägliche DTR für alle Stationen (1981–2024)"
-  ) +
-  theme_minimal()
-
-```
-
 ### Plot the DTR for each station in separate diagram
 ```{R}
 ggplot(dtr_all, aes(x = date, y = dtr)) +
@@ -92,6 +90,9 @@ ggplot(dtr_all, aes(x = date, y = dtr)) +
   theme_minimal()
 
 ```
+
+This first plot of the DTR over the entire time period shows that overall the DTR for all the stations seems to be between roughly 2°C and slightly above 20°C. This large variability in DTR is mainly down to the meteorological variability greatly affecting the DTR independent of its geographical location and surface coverage. For a better understanding of potential seasonal differences of DTR we will calculate the mean DTR for each month over the course of each year. 
+
 
 ### Calculate mean DTR per month
 ```{R}
@@ -129,6 +130,10 @@ ggplot(dtr_all_monthly_plot_course,
 
 ```
 
+Plotting the mean DTR for each month and station shows more clearly that a lot of the stations have a similar DTR. However we can see that between some station there are significant difference. In addition we can observe a seasonal cycle with considerable interannual variability. During the winter months DTR values are considerably lower than during the summer months. The differences between the individual stations are more pronounced during the shoulder seasons and the smallest during the winter months. But overall it is important to note, that even if we look at the mean DTR for each month there is a great variability over the years that are likely due to the variability in large scale weather over the years. This can be seen because most station show a similar pattern for the extreme peaks. What we cannot clearly observe is a trend in the development of the mean DTR for each month. 
+
+
+
 ### Plot trend of monthly mean DTR
 ```{R}
 dtr_all_monthly_plot_trend <- dtr_all_monthly |>
@@ -149,6 +154,9 @@ ggplot(dtr_all_monthly_plot_trend,
   theme_minimal()
 
 ```
+
+When plotting the trend of mean monthly DTR for each station, it is obvious that there was an increase in during the months February, March and April over the entire period at most stations. In addition we can also see a positive trend for some station in June and October. During the remaining month there is no clear trend for the DTR over the course of time. The increasing trend for some of the month could help to explain, why a more significant difference in DTR between the various stations was observed during the shoulder seasons. This graphic shows nicely that that for some stations DTR remained relatively stable even during this period resulting in the larger difference between individual stations. Another thing that can be observed is that certain stations lie systematically above the others (higher mean DTR) across almost all months, while others are consistently lower. This can likely be attributed to persistent local differences (potentially in land cover and therefore NDVI) in the vicinity of the station.  
+
 
 ### Fit linear trend per Station and month
 ```{R}
@@ -210,8 +218,9 @@ ggplot(dtr_season_all,
 
 ```
 
+Plotting the trend of the mean DTR for each season shows the presence of an upward trend especially during spring and winter with a jump from 6°C to 7°C and 10°C to 11°C respectively. During summer and autumn the trend of mean DTR seems to remain relatively stable when averaged over all the stations. However averaging over all the station likely weakens the trends that can be observed at individual stations. Because as shown before the monthly trend of mean DTR for each station significantly vary. In a next step we will therefore visualize the trend for each station more clearly with the help of a heat map.    
 
-### Heat map to visualize slope per decade of the mean dtr per month across all stations
+### Heat map to visualize slope per decade of the mean DTR per month across all stations
 ```{R}
 ggplot(trend_table,
        aes(x = month, y = station, fill = slope_per_decade)) +
@@ -228,6 +237,9 @@ ggplot(trend_table,
   theme_minimal()
 
 ```
+
+The calculation of the trend in monthly mean DTR per decade for each station individually is consistent with what could already be observed in the plot for the linear trend of mean DTR per month. During the months of February, March, April and June there are numerous stations that show significant increase in monthly mean DTR of over 0.6°C/decade. This means that over the course of the roughly 40 years the mean monthly DTR would have increased by over 2.4°C. Something that can be seen more clearly is that for a select few stations a negative trend can be observed. However, for most stations and months trend in mean monthly DTR seem to be non existent or very weak.
+Because a difference in mean DTR can come from a change in daily minimum as well as maximum temperature it is of interest to now further investigate the change in daily maximum and minimum temperature over time.
 
 ### Calculate mean tmin and mean tmax for each station per month
 ```{R}
@@ -306,7 +318,13 @@ ggplot(trend_tmax,
   theme_minimal()
 ```
 
-## Create Data Frame for NDVI data
+When comparing the trend in mean daily minimum temperature (tmin) and mean daily maximum temperature (tmax) it is very clear, that there is a stronger increase in tmax across almost all stations. In general tmin increases the most during February and June. For the rest of the months the trend is nearly zero or only quite weak. In comparison a clear increase in tmax can be observed from January- April and in June for almost all stations with increases being the most significant during February and June. During those months multiple stations experienced an increase in tmax per decade of over 1°C. Over the course of the whole analysis period this would result in an increase of mean monthly tmax of over 4°C.
+The overall strong increase of tmax compared to tmin can explain, why especially during February, March and June a strong increase in mean monthly DTR can be observed. 
+
+# Analysis of NDVI and DTR
+## Analysis of Correlation between NDVI and DTR Trends
+
+### Create Data Frame for NDVI data
 ```{R}
 in_dir <- here::here("data")
 
@@ -321,7 +339,7 @@ ndvi_all <- files |>
 
 ```
 
-## Aggregate NDVI data to monthly average
+### Aggregate NDVI data to monthly average
 ```{R}
 ndvi_monthly <- ndvi_all |>
   mutate(
@@ -342,7 +360,7 @@ ndvi_monthly <- ndvi_monthly |>
 
 ```
 
-## Determine potential trend in monthly NDVI data
+### Determine potential trend in monthly NDVI data
 ```{R}
 ndvi_mk_results <- ndvi_monthly |>
   arrange(site, month, year) |>
@@ -379,7 +397,7 @@ ndvi_mk_results <- ndvi_monthly |>
 
 ```
 
-## Look-Up Table for station name and abbreviation
+### Look-Up Table for station name and abbreviation
 ```{R}
 
 station_lookup <- tribble(
@@ -405,14 +423,14 @@ station_lookup <- tribble(
 ```
 
 
-## Visualize Trend of NDVI
+### Visualize Trend of NDVI
 ```{R}
 ndvi_mk_results2 <- ndvi_mk_results |>
   left_join(station_lookup, by = c("site" = "site"))
 
 ndvi_mk_results_plot <- ndvi_mk_results2 |>
   mutate(
-    month_name = factor(month_name, levels = month.abb),  # Jan–Dec
+    month_name = factor(month_name, levels = month.abb),  
     trend      = factor(trend, levels = c("decreasing", "no_trend", "increasing"))
   )
 
@@ -442,7 +460,10 @@ ggplot(ndvi_mk_results_plot,
 
 ```
 
-## Connection NDVI and DTR Trends
+Before analyzing the correlation between NDVI and DTR, an analysis is conducted on whether the NDVI itself shows any development over the course of 2001-2024. For this a Mann-Kendall test was used to determine if there is any trend and if so whether the NDVI is increasing or decreasing. 
+The heat map shows that a select few station show an increase of NDVI during February. This maybe could be due to a reduction of the amount of days that there is a snow cover. Snow cover results in a low NDVI so if there are less days with a snow cover the NDVI will generally increase, because the vegetation is not covered up anymore. A select few stations also show a decrease in NDVI from May-October. This could be attributed to a reduction in precipitation during the growing season which then results in less healthy vegetation and with that in a reduction of NDVI. It is particularly interesting that sion shows a decrease of NDVI for every month from May-October. This could potentially be explained by the geographical location of Sion. Sion is located in the Rhonetal. This is a region in Switzerland, that has experienced a more significant reduction in available water for vegetation over the course of the last 2-3 decades. This likely resulted in less healthy vegetation which decreases the NDVI. However, overall the NDVI seemed to stay consistent. 
+
+### Correlation between NDVI and DTR Trends
 ```{R}
 trend_both_cat <- trend_table |>
   left_join(ndvi_mk_results2, by = c("station" = "station_full", "month" = "month_name"))
@@ -450,12 +471,12 @@ trend_both_cat <- trend_table |>
 trend_both_cat |>
   mutate(
     season = case_when(
-      month %in% c("Jan", "Feb", "Mar") ~ "Jan–Mar",
-      month %in% c("Apr", "May", "Jun") ~ "Apr–Jun",
-      month %in% c("Jul", "Aug", "Sep") ~ "Jul–Sep",
-      month %in% c("Oct", "Nov", "Dec") ~ "Oct–Dec"
+      month %in% c("Dec", "Jan", "Feb") ~ "Winter",
+      month %in% c("Mar", "Apr", "May") ~ "Spring",
+      month %in% c("Jun", "Jul", "Aug") ~ "Summer",
+      month %in% c("Sep", "Oct", "Nov") ~ "Autumn"
     ),
-    season = factor(season, levels = c("Jan–Mar", "Apr–Jun", "Jul–Sep", "Oct–Dec"))
+    season = factor(season, levels = c("Winter", "Spring", "Summer", "Autumn"))
   ) |>
   ggplot(aes(x = trend, y = slope_per_decade)) +
   geom_boxplot() +
@@ -469,7 +490,11 @@ trend_both_cat |>
 
 ```
 
-## Calculate seasonal NDVI
+This graphic shows the DTR-Trend per decade for each season and categorizes into stations with increasing, decreasing or no-trend in NDVI. For winter it can be seen that an increase in NDVI also results in a significant increase of DTR-Trend. This is likely down to the fact, that the increased NDVI is due to less snow and/or more active vegetation during winter months. The increase of DTR is likely not due to the increase in DTR, but the increase in DTR as well as the NDVI are likely due to an increase in mean daily maximum temperature (tmax). During spring a similar pattern applies. The strongest increase in DTR trend can also be observed with increasing NDVI. Interestingly during summer a decrease in NDVI also show a negative DTR trend. This correlation does not seem intuitive and should be further investigated. 
+Likely the observed correlations between DTR and NDVI trends are not causal, but they are both caused by a different reason. Potentially the general increase in temperature and with that an increase in vegetation growth during winter and spring. 
+
+
+### Calculate seasonal NDVI
 ```{R}
 ndvi_season <- ndvi_monthly |>
   mutate(
@@ -490,7 +515,7 @@ ndvi_season <- ndvi_monthly |>
 
 ```
 
-## Sen-Slope for NDVI
+### Sen-Slope for NDVI
 ```{R}
 trend_ndvi_season <- ndvi_season |>
   arrange(site, season, year) |>
@@ -520,7 +545,7 @@ trend_ndvi_season <- ndvi_season |>
 
 ```
 
-## Seasonal trend DTR
+### Seasonal trend DTR
 ```{R}
 dtr_season <- dtr_all_monthly |>
   mutate(
@@ -567,7 +592,7 @@ trend_dtr_season <- dtr_season |>
 
 ```
 
-## Linear Regression trend DTR and NDVI
+### Linear Regression trend DTR and NDVI
 ```{R}
 trend_dtr_season_full_name <- trend_dtr_season |>
   inner_join(station_lookup, by = c("station" = "station_full"))
@@ -597,7 +622,7 @@ for (s in levels(trend_both_season$season)) {
 
 ```
 
-## Spearman Korrelation 
+### Spearman Correlation 
 ```{R}
 for (s in levels(trend_both_season$season)) {
   dat_s <- dplyr::filter(trend_both_season, season == s)
@@ -608,9 +633,9 @@ res <- cor.test(dat_s$ndvi_sen_per_decade,
 print(res)
 ```
 
-# Analysis Correlation DTR and NDVI
+## Analysis Correlation DTR and NDVI
 
-## Avererage NDVI per Station & Season
+### Avererage NDVI per Station & Season
 ```{R}
 ndvi_season_clim <- ndvi_season |>
   group_by(site, season) |>
@@ -620,7 +645,7 @@ ndvi_season_clim <- ndvi_season |>
   )
 ```
 
-## Average DTR per Station and Season
+### Average DTR per Station and Season
 ```{R}
 dtr_season_clim <- dtr_season |>
   group_by(station, season) |>
@@ -631,7 +656,7 @@ dtr_season_clim <- dtr_season |>
 
 ```
 
-## Merge DTR and NDVI
+### Merge DTR and NDVI
 ```{R}
 ndvi_season_clim_full_name <- ndvi_season_clim |>
   left_join(station_lookup, by = c("site" = "site"))
@@ -641,7 +666,7 @@ season_clim <- dtr_season_clim |>
 
 ```
 
-## Scatterplot for each Season
+### Scatterplot for each Season
 ```{R}
 ggplot(season_clim,
        aes(x = ndvi_clim, y = dtr_clim)) +
@@ -658,7 +683,7 @@ ggplot(season_clim,
 
 ```
 
-## Analyze significance of correlation with Spearman Correlation
+### Analyze significance of correlation with Spearman Correlation
 ```{R}
 season_corr <- season_clim |>
   group_by(season) |>
@@ -672,5 +697,23 @@ season_corr <- season_clim |>
 season_corr
 ```
 
+The graphic of mean DTR plotted against mean NDVI shows that for spring, summer and winter a higher mean NDVI result in a lower mean NDVI. This would be an indication that more healthy vegetation and higher NDVI respectively leads to smaller DTR. The scatter plot shows that the individual data points are spread out quite a lot, especially in spring and autumn. An analysis with the spearman correlation shows that the correlation is stronger in winter and summer months and only marginal during spring and autumn. However, the spearman correlation also shows, that the p-value is very high, especially for spring and autumn. For winter and summer the correlation is significant for the 85% and 80% confidence interval respectively. However, to actually talk about a statistically significant correlation a p-value below 0.05 would be desirable. One possible explanation for the high p-values could be that the analysis was only conducted for 15 stations. 
+Overall, the analysis provides suggestive but not conclusive evidence that stations with higher mean NDVI tend to have a smaller DTR, especially in winter and summer. Given the limited number of stations and the relatively large scatter, these results should be interpreted as exploratory. They are consistent with the hypothesized moderating effect of vegetation on DTR, but they do not allow for a strong statement about the strength or universality of this relationship.
+
+# Conclusion
+
+This analysis investigated two main questions:
+(i) how the daily temperature range (DTR) has evolved at 15 Swiss automatic weather stations between 1981 and 2024, and
+(ii) to what extent differences in DTR and its trends can be related to local vegetation conditions, represented by MODIS NDVI in a 500-m radius around each station (2001–2024).
+
+The temperature analysis shows a clear and robust **seasonal cycle** of DTR, with the smallest ranges in winter and the largest in summer. Superimposed on this cycle is a **moderate long-term increase in DTR**, which is most pronounced in late winter and spring. Linear trends of monthly mean DTR are generally positive in February–June at many stations, while trends in high summer and autumn are weaker and sometimes close to zero. Comparing trends of minimum and maximum temperatures reveals that both tmin and tmax have increased over the study period, but **tmax has warmed more strongly and more consistently than tmin**, especially in late winter and spring. This asymmetric warming explains much of the observed increase in DTR during these seasons.
+
+The NDVI analysis based on the Mann–Kendall test indicates that **no uniform greening or browning signal** emerges across all stations. Many station–month combinations show no significant NDVI trend. Where significant changes occur, they are strongly season- and site-dependent: some lowland stations exhibit increasing NDVI in winter and early spring, while others, notably Sion and a few additional sites, show decreasing NDVI during parts of the main growing season. Overall, NDVI trends are weaker and more heterogeneous than the temperature trends.
+
+The comparison of **DTR trends with NDVI trends** suggests some seasonally varying relationships but no simple, universal pattern. In winter and spring, stations with increasing NDVI tend to show somewhat larger positive DTR trends, whereas in summer decreasing NDVI is often associated with slightly negative or near-zero DTR trends. However, the distributions of DTR trends for the different NDVI-trend categories overlap substantially, indicating that vegetation changes alone cannot explain the spatial variability in DTR trends.
+
+The analysis of **mean NDVI versus mean DTR** provides qualitatively consistent but statistically weak evidence that higher vegetation greenness is associated with smaller DTR. In all seasons the Spearman correlation coefficients between mean NDVI and mean DTR are negative, and the scatterplots for winter and summer in particular hint at an inverse relationship. Yet all p-values remain above 0.05, reflecting both the **limited sample size (15 stations)** and the considerable spread in the data. Thus, the hypothesised damping effect of vegetation on DTR is **plausible but not demonstrated in a statistically robust way** by this dataset.
+
+In summary, the results show that **DTR in Switzerland has increased modestly over the last four decades**, mainly in late winter and spring, primarily due to a stronger warming of daytime than nighttime temperatures. Local vegetation characteristics, as captured by NDVI, appear to modulate DTR to some degree—greener surroundings are generally associated with slightly smaller DTR—but this influence is relatively weak compared to other factors and cannot be quantified with high statistical confidence for the current set of stations. Future work could extend the analysis to more stations, include additional surface and land-use variables (e.g. urbanisation, topography, soil moisture), and better account for the influence of snow cover on NDVI, in order to more clearly isolate and understand the role of vegetation in controlling the daily temperature range.
 
 
