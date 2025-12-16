@@ -20,7 +20,7 @@ Primary objective is to quantify how diurnal temperature range has changed betwe
 
 1.  Have DTR values increased, decreased or remained stable over the period 1981-2024?
 
-2.  Can differences in DTR trends between stations be linked to differences in vegetation, as measured by NDVI within a radius of 500m around each station?
+2.  Can differences in DTR trends between stations be linked to differences in vegetation, as measured by NDVI within a radius of 250m around each station?
 
 ### 4. Implementation
 
@@ -60,9 +60,19 @@ In the vignettes folder in the Test_Data.Rmd file I implemented a comparison of 
 ### 8. Download the raw data
 
 The raw data can be downloaded by running the "download_data_temp_meteoschweiz.R" script in the analysis folder. Before running the script you will have to create a folder data_raw. The script then downloads the daily temperature data for the 15 selected stations (covering 1981-2024, where available). To find detailed information on the data and the stations from Meteo Swiss please refer to ogd-smn_meta_parameters.csv and ogd-smn_meta_stations.csv\
-The MODIS data for NDVI can be downloaded with the script download_MODIS_NDVI.R from the analysis folder.
+The MODIS data for NDVI can be downloaded with the script download_MODIS_NDVI.R from the analysis folder. To then extract the relevant NDVI data that was used in the report the script prepare_ndvi.R from the analysis folder should be run.
 
-### 9. Literature
+### 9. Project Structure
+
+Proseminar-AGDS/ \
+├─ analysis/ \# Analyses / outputs (e.g., .Rmd, results) \
+├─ data/ \# Processed/clean datasets (ready to use) \
+├─ data_raw/ \# Raw data (unchanged; original downloads/files) \
+├─ figures/ \# Exported figures (PNG/PDF) for report/README \
+├─ R/ \# R scripts and functions (pipeline, helpers) \
+└─ vignettes/ \# Report sources (e.g., R Markdown vignettes)
+
+### 10. Literature
 
 Scheitlin and Dixon(2010) : Diurnal Temperature Range Variability due to Land Cover and Airmass Types in the Southeast\
 Gogoi et. al.(2019) : Land use and land cover change effect on surface temperature over Eastern India

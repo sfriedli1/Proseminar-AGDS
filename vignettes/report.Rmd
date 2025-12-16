@@ -1,5 +1,5 @@
 ---
-title: "Analysis of Correlation of DTR and NDVI"
+title: "Analysis of the Correlation of DTR and NDVI"
 output: 
   html_document:
     code_folding: hide
@@ -20,8 +20,9 @@ knitr::opts_chunk$set(
 ```
 
 # 1. Introduction
-The objective of this analysis is to explore the development of the diurnal temperature range (DTR) from 1981-2024 in the Swiss Plateau. We will first calculate the DTR for all 15 stations and assess if a trend is observable. Because the DTR is influenced by the daily minimum and maximum temperature, an in-depth analysis of the daily minimum and maximum temperature will also be conducted in the course of this analysis. 
-In the next step the development of the NDVI in a radius of 500 meters around each station will be calculated and then an analysis of the correlation between DTR and NDVI will be conducted. 
+This analysis examines how the diurnal temperature range (DTR) defined as the difference between daily maximum and minimum temperature has evolved between 1981 and 2024 across 15 Meteo Swiss stations located in and around the Swiss Plateau. In a first step, DTR is calculated for each station and evaluated for long-term trends over the study period. Because changes in DTR can arise from shifts in either daily maximum temperature (Tmax), daily minimum temperature (Tmin), or both, the analysis additionally investigates trends in Tmax and Tmin to support the interpretation of observed DTR changes.
+In a second step, the analysis explores whether differences in local vegetation conditions are related to differences in DTR behavior. Vegetation is quantified using the Normalized Difference Vegetation Index (NDVI) derived from MODIS satellite data. NDVI is extracted for the area surrounding each station, using a 250 m radius as an approximation of the immediate station environment. Building on these data, the relationship between NDVI and DTR is assessed using correlation and linear regression analysis.
+For overview, the selected stations, including their abbreviations, full names, and geographic locations—are summarized below and visualized on an overview map.
 
 **List of all necessary libraries**
 ```{R}
@@ -152,8 +153,7 @@ ggplot(dtr_all_monthly_plot_course,
 
 ```
 
-Plotting the mean DTR for each month and station shows more clearly that a lot of the stations have a similar DTR. However we can see that between some station there are significant difference. In addition we can observe a seasonal cycle with considerable interannual variability. During the winter months DTR values are considerably lower than during the summer months. The differences between the individual stations are more pronounced during the shoulder seasons and the smallest during the winter months. But overall it is important to note, that even if we look at the mean DTR for each month there is a great variability over the years that are likely due to the variability in large scale weather over the years. This can be seen because most station show a similar pattern for the extreme peaks. What we cannot clearly observe is a trend in the development of the mean DTR for each month. 
-
+Plotting the mean DTR for each month and station shows more clearly that a lot of the stations have a similar DTR. However we can see that between some station there are significant difference. In addition we can observe a seasonal cycle with considerable inter annual variability. During the winter months DTR values are considerably lower than during the summer months. The differences between the individual stations are more pronounced during the shoulder seasons and the smallest during the winter months. But overall it is important to note, that even if we look at the mean DTR for each month there is a great variability over the years that are likely due to the variability in large scale weather over the years. This can be seen because most station show a similar pattern for the extreme peaks. What we cannot clearly observe is a trend in the development of the mean DTR for each month. 
 
 
 ### Plot trend of monthly mean DTR
@@ -692,7 +692,7 @@ Overall, the analysis provides suggestive but not conclusive evidence that stati
 
 This analysis investigated two main questions:
 (i) how the daily temperature range (DTR) has evolved at 15 Swiss automatic weather stations between 1981 and 2024, and
-(ii) to what extent differences in DTR and its trends can be related to local vegetation conditions, represented by MODIS NDVI in a 500-m radius around each station (2001–2024).
+(ii) to what extent differences in DTR and its trends can be related to local vegetation conditions, represented by MODIS NDVI in a 250-m radius around each station (2001–2024).
 
 The temperature analysis shows a clear and robust **seasonal cycle** of DTR, with the smallest ranges in winter and the largest in summer. Superimposed on this cycle is a **moderate long-term increase in DTR**, which is most pronounced in late winter and spring. Linear trends of monthly mean DTR are generally positive in February–June at many stations, while trends in high summer and autumn are weaker and sometimes close to zero. Comparing trends of minimum and maximum temperatures reveals that both tmin and tmax have increased over the study period, but **tmax has warmed more strongly and more consistently than tmin**, especially in late winter and spring. This asymmetric warming explains much of the observed increase in DTR during these seasons.
 
@@ -702,6 +702,6 @@ The comparison of **DTR trends with NDVI trends** suggests some seasonally varyi
 
 The analysis of **mean NDVI versus mean DTR** provides qualitatively consistent but statistically weak evidence that higher vegetation greenness is associated with smaller DTR. In all seasons the Spearman correlation coefficients between mean NDVI and mean DTR are negative, and the scatterplots for winter and summer in particular hint at an inverse relationship. Yet all p-values remain above 0.05, reflecting both the **limited sample size (15 stations)** and the considerable spread in the data. Thus, the hypothesised damping effect of vegetation on DTR is **plausible but not demonstrated in a statistically robust way** by this dataset.
 
-In summary, the results show that **DTR in Switzerland has increased modestly over the last four decades**, mainly in late winter and spring, primarily due to a stronger warming of daytime than nighttime temperatures. Local vegetation characteristics, as captured by NDVI, appear to modulate DTR to some degree—greener surroundings are generally associated with slightly smaller DTR—but this influence is relatively weak compared to other factors and cannot be quantified with high statistical confidence for the current set of stations. Future work could extend the analysis to more stations, include additional surface and land-use variables (e.g. urbanisation, topography, soil moisture), and better account for the influence of snow cover on NDVI, in order to more clearly isolate and understand the role of vegetation in controlling the daily temperature range.
+In summary, the results show that **DTR in Switzerland has increased modestly over the last four decades**, mainly in late winter and spring, primarily due to a stronger warming of daytime than nighttime temperatures. Local vegetation characteristics, as captured by NDVI, appear to modulate DTR to some degree. "Greener" surroundings are generally associated with slightly smaller DTR but this influence is relatively weak compared to other factors and cannot be quantified with high statistical confidence for the current set of stations. Future work could extend the analysis to more stations, include additional surface and land-use variables (e.g. urbanisation, topography, soil moisture), and better account for the influence of anthropogenic activity on NDVI, in order to more clearly isolate and understand the role of vegetation in controlling the daily temperature range.
 
 
