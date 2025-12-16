@@ -44,7 +44,10 @@ knitr::kable(station_lookup,
              col.names = c("Abbreviation", "Station name"),
              caption = "Look-Up table fo station abbreviations and full names")
 ```
-
+**Map of 15 Meteo Schweiz Stations**
+```{R}
+knitr::include_graphics("../figures/stations_map.png")
+```
 
 **Reading in the data and calculating DTR**
 ```{R}
