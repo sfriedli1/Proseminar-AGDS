@@ -6,7 +6,7 @@ In this repository I will store all the relevant code, data and the report for t
 
 ### 1. Topic Summary
 
-The object of this project is to investigate how the diurnal temperature range (DTR) has evolved at selected stations on the Swiss Plateau (Mittelland) between 1981 and 2024, and to what extent differences in surrounding vegetation can help explain this evolution. Using daily temperature data from 15 stations of the Meteo Swiss automatic network and satellite-derived vegetation indices (NDVI and if necessary EVI) from MODIS, I will quantify long-term DTR trends and assess whether these trends are related to the vegetation in a 500m radius around the stations. The overarching aim is to tell a coherent story with informative graphics and to derive insights that are relevant for understanding how land surface may modulate local climate.
+The object of this project is to investigate how the diurnal temperature range (DTR) has evolved at selected stations on the Swiss Plateau (Mittelland) between 1981 and 2024, and to what extent differences in surrounding vegetation can help explain this evolution. Using daily temperature data from 15 stations of the Meteo Swiss automatic network and satellite-derived vegetation indices (NDVI and if necessary EVI) from MODIS, I will quantify long-term DTR trends and assess whether these trends are related to the vegetation in a 250m radius around the stations. The overarching aim is to tell a coherent story with informative graphics and to derive insights that are relevant for understanding how land surface may modulate local climate.
 
 ### 2. Background and motivation
 
