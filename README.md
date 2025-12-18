@@ -64,13 +64,13 @@ The MODIS data for NDVI can be downloaded with the script download_MODIS_NDVI.R 
 
 ### 9. Project Structure
 
-Proseminar-AGDS/ \
-├─ analysis/ \# Analyses / outputs (e.g., .Rmd, results) \
-├─ data/ \# Processed/clean datasets (ready to use) \
-├─ data_raw/ \# Raw data (unchanged; original downloads/files) \
-├─ figures/ \# Exported figures (PNG/PDF) for report/README \
-├─ R/ \# R scripts and functions (pipeline, helpers) \
-└─ vignettes/ \# Report sources (e.g., R Markdown vignettes)
+Proseminar-AGDS/\
+├─ analysis/ \# Script for accessing raw data and preprocessing\
+├─ data/ \# Processed/clean data sets (ready to use)\
+├─ data_raw/ \# Raw data (unchanged; original downloads/files)\
+├─ figures/ \# Exported figures (PNG/PDF) for report/README\
+├─ R/ \# R scripts and functions (helpers)\
+└─ vignettes/ \# location of Report
 
 ### 10. Literature
 
